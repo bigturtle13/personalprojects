@@ -1,0 +1,1237 @@
+---
+title: "Final Paper Code"
+author: "Parul Datta, Amrit Dhillon"
+date: "2025-06-10"
+output:
+  html_document:
+    df_print: paged
+  pdf_document:
+    number_sections: true
+---
+
+## INSTRUCTIONS
+## In order to run this .rmd file, you will need to download the dataset from: https://www.icpsr.umich.edu/web/ICPSR/studies/25203/summary
+
+## After downloading the dataset you will need to change the file location in the read.dta in line 28.
+
+
+```{r setup, include=FALSE}
+# some useful settings
+knitr::opts_chunk$set(echo = TRUE, tidy.opts = list(width.cutoff = 55), tidy = TRUE, fig.align="center")
+```
+
+## SETUP - Load Dataset
+
+```{r}
+#Allow .dat files to be read
+library(foreign)
+r <- read.dta("/Users/amritdhillon/Desktop/econ124/Data Sources/ICPSR_25203/DS0001/25203-0001-Data.dta")
+
+```
+
+## SETUP - Trim Dataset
+
+```{r}
+h = r[,-c(16,19,23,24,25,26,29,30,31,33:41,43:96)] #removes a number of redundant columns, can be adjusted
+
+h$SMSA = factor(h$SMSA)
+h$TYPE = factor(h$TYPE)
+h$STRUCTURETYPE = factor(h$STRUCTURETYPE)
+
+testh = h[!is.na(h$VALUE) & !is.na(h$ZINC2),]
+
+m1 = testh[testh$METRO == 1,]
+m2 = testh[testh$METRO == 2,]
+m3 = testh[testh$METRO == 3,]
+m7 = testh[testh$METRO == 7,]
+
+```
+## DATA - Barplot of Means
+
+```{r}
+sum_m1 <- c(mean(m1$AGE1), mean(m1$ROOMS), mean(m1$UTILITY), mean(m1$VALUE)/1000)
+sum_m2 <- c(mean(m2$AGE1), mean(m2$ROOMS), mean(m2$UTILITY), mean(m2$VALUE)/1000)
+sum_m3 <- c(mean(m3$AGE1), mean(m3$ROOMS), mean(m3$UTILITY), mean(m3$VALUE)/1000)
+sum_m7 <- c(mean(m7$AGE1), mean(m7$ROOMS), mean(m7$UTILITY), mean(m7$VALUE)/1000)
+          
+means_matrix <- matrix(c(sum_m1, sum_m2, sum_m3, sum_m7), nrow = 4, byrow = TRUE)
+
+rownames(means_matrix) <- c("m1", "m2", "m3", "m7")
+colnames(means_matrix) <- c("AGE1", "ROOMS",  "UTILITY", "VALUE in 1000s")
+
+# Plot
+barplot(t(means_matrix), beside = TRUE, col = c("steelblue",  "seagreen", "orchid", "red"),
+       ylim = c(0, max(means_matrix)*1.2), 
+        main = "Means by Metro Group", ylab = "Mean Value")
+
+legend("top", legend = colnames(means_matrix), fill = c("steelblue", "seagreen", "orchid", "red"), cex = 0.5)
+mean(testh$VALUE)
+
+```
+
+
+
+## DATA - Simple Logistic Regression Home Values Over 80,000
+
+```{r}
+#METRO1
+tt1 = m1[m1$VALUE >= 80000 | m1$VALUE < 80000,]
+tt1$more = (tt1$VALUE >= 80000)
+
+reg_q1 <- glm(more ~ LMED + BEDRMS + BUILT + NUNITS + ROOMS + AGE1 + UTILITY, data= tt1, family = "binomial")
+
+summary(reg_q1)
+
+
+#METRO2
+tt2 = m2[m2$VALUE >= 80000 | m2$VALUE < 80000,]
+tt2$more = (tt2$VALUE >= 80000)
+
+reg_q2 <- glm(more ~ LMED + BEDRMS + BUILT + NUNITS + ROOMS + AGE1 + UTILITY, data= tt2, family = "binomial")
+
+summary(reg_q2)
+
+
+#METRO3
+tt3 = m3[m3$VALUE >= 80000 | m3$VALUE < 80000,]
+tt3$more = (tt3$VALUE >= 80000)
+
+reg_q3 <- glm(more ~ LMED + BEDRMS + BUILT + NUNITS + ROOMS + AGE1 + UTILITY, data= tt3, family = "binomial")
+
+summary(reg_q3)
+
+
+#METRO7
+tt7 = m7[m7$VALUE >= 80000 | m7$VALUE < 80000,]
+tt7$more = (tt7$VALUE >= 80000)
+
+
+reg_q7 <- glm(more ~ LMED + BEDRMS + BUILT + NUNITS + ROOMS + AGE1 + UTILITY, data= tt7, family = "binomial")
+
+summary(reg_q7)
+
+```
+
+## DATA - Simple Logistic Regression Home Values Over 400,000
+
+```{r}
+#METRO1
+tt01 = m1[m1$VALUE >= 400000 | m1$VALUE < 400000,]
+tt01$more = (tt01$VALUE >= 400000)
+
+reg2_q1 <- glm(more ~ LMED + BEDRMS + BUILT + NUNITS + ROOMS + AGE1 + UTILITY, data= tt01, family = "binomial")
+
+summary(reg2_q1)
+
+
+#METRO2
+tt02 = m2[m2$VALUE >= 400000 | m2$VALUE < 400000,]
+tt02$more = (tt02$VALUE >= 400000)
+
+reg2_q2 <- glm(more ~ LMED + BEDRMS + BUILT + NUNITS + ROOMS + AGE1 + UTILITY, data= tt02, family = "binomial")
+
+summary(reg2_q2)
+
+
+#METRO3
+tt03 = m3[m3$VALUE >= 400000 | m3$VALUE < 400000,]
+tt03$more = (tt03$VALUE >= 400000)
+
+reg2_q3 <- glm(more ~ LMED + BEDRMS + BUILT + NUNITS + ROOMS + AGE1 + UTILITY, data= tt03, family = "binomial")
+
+summary(reg2_q3)
+
+
+#METRO7
+tt07 = m7[m7$VALUE >= 400000 | m7$VALUE < 400000,]
+tt07$more = (tt07$VALUE >= 400000)
+
+reg2_q7 <- glm(more ~ LMED + BEDRMS + BUILT + NUNITS + ROOMS + AGE1 + UTILITY, data= tt07, family = "binomial")
+
+summary(reg2_q7)
+
+```
+
+## Simple Logistic Regression on Log(VALUE)
+```{r}
+
+ols1 <- glm(log(VALUE) ~ LMED + BEDRMS + BUILT + NUNITS + ROOMS + AGE1 + UTILITY, data = m1)
+coef(summary(ols1))
+
+ols2 <- glm(log(VALUE) ~ LMED + BEDRMS + BUILT + NUNITS + ROOMS + AGE1 + UTILITY, data = m2)
+coef(summary(ols2))
+
+ols3 <- glm(log(VALUE) ~ LMED + BEDRMS + BUILT + NUNITS + ROOMS + AGE1 + UTILITY, data = m3)
+coef(summary(ols3))
+
+ols7 <- glm(log(VALUE) ~ LMED + BEDRMS + BUILT + NUNITS + ROOMS + AGE1 + UTILITY, data = m7)
+coef(summary(ols7))
+
+```
+
+```{r}
+library(glmnetUtils)
+```
+
+## ORIGINAL POST LASSO REGRESSION - NO INTERACTION TERMS
+
+```{r}
+#m1
+set.seed(0)
+
+y_model_m1 <- cv.glmnet(log(VALUE) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE))^2, data = m1, use.model.frame = TRUE, nfold =3)
+
+set.seed(0)
+d_model_m1 <- cv.glmnet(log(LMED) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE))^2, data = m1, use.model.frame = TRUE, nfold =3)
+
+
+#m2
+set.seed(0)
+
+y_model_m2 <- cv.glmnet(log(VALUE) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE))^2, data = m2, use.model.frame = TRUE, nfold =3)
+
+set.seed(0)
+d_model_m2 <- cv.glmnet(log(LMED) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE))^2, data = m2, use.model.frame = TRUE, nfold =3)
+
+#m3
+set.seed(0)
+
+y_model_m3 <- cv.glmnet(log(VALUE) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE))^2, data = m3, use.model.frame = TRUE, nfold =3)
+
+set.seed(0)
+d_model_m3 <- cv.glmnet(log(LMED) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE))^2, data = m3, use.model.frame = TRUE, nfold =3)
+
+#m7
+set.seed(0)
+
+y_model_m7 <- cv.glmnet(log(VALUE) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE))^2, data = m7, use.model.frame = TRUE, nfold =3)
+
+set.seed(0)
+d_model_m7 <- cv.glmnet(log(LMED) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE))^2, data = m7, use.model.frame = TRUE, nfold =3)
+```
+
+```{r}
+#m1
+y_nonzero_coef_ind_m1 <- which(coef(y_model_m1, s = "lambda.min")[-1]!=0 )
+d_nonzero_coef_ind_m1 <- which(coef(d_model_m1, s = "lambda.min")[-1]!=0 )
+
+nonzero_coef_ind_m1 <- union(y_nonzero_coef_ind_m1,d_nonzero_coef_ind_m1)
+
+
+#m2
+y_nonzero_coef_ind_m2 <- which(coef(y_model_m2, s = "lambda.min")[-1]!=0 )
+d_nonzero_coef_ind_m2 <- which(coef(d_model_m2, s = "lambda.min")[-1]!=0 )
+
+nonzero_coef_ind_m2 <- union(y_nonzero_coef_ind_m2,d_nonzero_coef_ind_m2)
+
+
+#m3
+y_nonzero_coef_ind_m3 <- which(coef(y_model_m3, s = "lambda.min")[-1]!=0 )
+d_nonzero_coef_ind_m3 <- which(coef(d_model_m3, s = "lambda.min")[-1]!=0 )
+
+nonzero_coef_ind_m3 <- union(y_nonzero_coef_ind_m3,d_nonzero_coef_ind_m3)
+
+
+#m7
+y_nonzero_coef_ind_m7 <- which(coef(y_model_m7, s = "lambda.min")[-1]!=0 )
+d_nonzero_coef_ind_m7 <- which(coef(d_model_m7, s = "lambda.min")[-1]!=0 )
+
+nonzero_coef_ind_m7 <- union(y_nonzero_coef_ind_m7,d_nonzero_coef_ind_m7)
+
+```
+
+
+
+```{r}
+#m1
+controls_m1 <- model.matrix(~(poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) + poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE))^2 , data = m1 )[, -1]
+
+
+#m2
+controls_m2 <- model.matrix(~(poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) + poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE))^2 , data = m2 )[, -1]
+
+
+#m3
+controls_m3 <- model.matrix(~(poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) + poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE))^2 , data = m3 )[, -1]
+
+
+#m7
+controls_m7 <- model.matrix(~(poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) + poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE))^2 , data = m7 )[, -1]
+
+```
+
+
+```{r}
+#m1
+new_m1 <- data.frame(VALUE =m1$VALUE ,
+                   LMED =m1$LMED ,
+                   controls_m1[,nonzero_coef_ind_m1 ])
+
+
+#m2
+new_m2 <- data.frame(VALUE =m2$VALUE ,
+                   LMED =m2$LMED ,
+                   controls_m2[,nonzero_coef_ind_m2 ])
+
+
+#m3
+new_m3 <- data.frame(VALUE =m3$VALUE ,
+                   LMED =m3$LMED ,
+                   controls_m3[,nonzero_coef_ind_m3 ])
+
+
+#m7
+new_m7 <- data.frame(VALUE =m7$VALUE ,
+                   LMED =m7$LMED ,
+                   controls_m7[,nonzero_coef_ind_m7 ])
+
+```
+
+
+```{r}
+#m1
+cat(length(nonzero_coef_ind_m1), "controls were included out of", ncol(controls_m1), "\n")
+
+
+#m2
+cat(length(nonzero_coef_ind_m2), "controls were included out of", ncol(controls_m2), "\n")
+
+
+#m3
+cat(length(nonzero_coef_ind_m3), "controls were included out of", ncol(controls_m3), "\n")
+
+
+#m7
+cat(length(nonzero_coef_ind_m7), "controls were included out of", ncol(controls_m7), "\n")
+
+```
+
+```{r}
+#m1
+post_lasso_m1 <- glm(log(VALUE) ~ ., data =new_m1)
+coef(summary(post_lasso_m1))["LMED", ]
+
+
+#m2
+post_lasso_m2 <- glm(log(VALUE) ~ ., data =new_m2)
+coef(summary(post_lasso_m2))["LMED", ]
+
+
+#m3
+post_lasso_m3 <- glm(log(VALUE) ~ ., data =new_m3)
+coef(summary(post_lasso_m3))["LMED", ]
+
+
+#m7
+post_lasso_m7 <- glm(log(VALUE) ~ ., data =new_m7)
+coef(summary(post_lasso_m7))["LMED", ]
+
+```
+
+```{r}
+#m1
+cfact_data_m1 <- new_m1
+cfact_data_m1$LMED <- mean(m1$LMED) * 1.1    
+
+
+#m2
+cfact_data_m2 <- new_m2
+cfact_data_m2$LMED <- mean(m2$LMED) * 1.1      
+
+
+#m3
+cfact_data_m3 <- new_m3
+cfact_data_m3$LMED <- mean(m3$LMED) * 1.1    
+
+
+#m7
+cfact_data_m7 <- new_m7
+cfact_data_m7$LMED <- mean(m7$LMED) * 1.1    
+
+```
+
+
+```{r}
+### Predicted
+mean(predict(post_lasso_m1,cfact_data_m1 ))
+
+mean(predict(post_lasso_m2,cfact_data_m2 ))
+
+mean(predict(post_lasso_m3,cfact_data_m3 ))
+
+mean(predict(post_lasso_m7,cfact_data_m7 ))
+
+```
+
+```{r}
+## Actual
+mean(log(m1$VALUE))
+
+mean(log(m2$VALUE))
+
+mean(log(m3$VALUE))
+
+mean(log(m7$VALUE))
+```
+```{r}
+#Differences between actual and predicted home values in %
+m1_d = mean(log(m1$VALUE)) - mean(predict(post_lasso_m1,cfact_data_m1 )) 
+m1_d * 100
+m2_d = mean(log(m2$VALUE)) - mean(predict(post_lasso_m2,cfact_data_m2 ))
+m2_d * 100
+m3_d = mean(log(m3$VALUE)) - mean(predict(post_lasso_m3,cfact_data_m3 ))
+m3_d * 100
+m7_d = mean(log(m7$VALUE)) - mean(predict(post_lasso_m7,cfact_data_m7 ))
+m7_d * 100
+
+```
+
+```{r}
+par(mfrow = c(2,2))
+
+#Y models
+plot(y_model_m1)
+title("CV Curve m1 y_model", line = 3)
+plot(y_model_m2)
+title("CV Curve m2 y_model", line = 3)
+plot(y_model_m3)
+title("CV Curve m3 y_model", line = 3)
+plot(y_model_m7)
+title("CV Curve m7 y_model", line = 3)
+
+#D models
+plot(d_model_m1)
+title("CV Curve m1 d_model", line = 3)
+plot(d_model_m2)
+title("CV Curve m2 d_model", line = 3)
+plot(d_model_m3)
+title("CV Curve m3 d_model", line = 3)
+plot(d_model_m7)
+title("CV Curve m7 d_model", line = 3)
+
+# variability vs bias charts as lambda goes one way, the balance changes, lowest point is the point of equilibrium variability and bias for that data. Specifically the y model tells us the variability and bias in log(VALUE) of the homes while the d model represents the log of the LMED of an area and the sensitivity of this variables to other predictors.
+
+```
+
+```{r}
+par(mfrow = c(2,2))
+
+#Y models
+plot(y_model_m1$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m1 y_model", line = 3)
+plot(y_model_m2$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m2 y_model", line = 3)
+plot(y_model_m3$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m3 y_model", line = 3)
+plot(y_model_m7$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m7 y_model", line = 3)
+
+#D models
+plot(d_model_m1$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m1 d_model", line = 3)
+plot(d_model_m2$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m2 d_model", line = 3)
+plot(d_model_m3$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m3 d_model", line = 3)
+plot(d_model_m7$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m7 d_model", line = 3)
+
+#these graphs tell us how well the y and d models variables adjust to different levels of penalization and determine the most useful variables in determining the value of a home in different models by showing the non-zero coefficient values of variables with an impact on home value 
+
+```
+
+## POST LASSO REGRESSION - INTERACTION TERM(LMED*AGE)
+
+```{r}
+#m1
+set.seed(0)
+
+y2_model_m1 <- cv.glmnet(log(VALUE) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(LMED * AGE1, 3, raw = TRUE))^2, data = m1, use.model.frame = TRUE, nfold =3)
+
+set.seed(0)
+d2_model_m1 <- cv.glmnet(log(LMED) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(LMED * AGE1, 3, raw = TRUE))^2, data = m1, use.model.frame = TRUE, nfold =3)
+
+
+#m2
+set.seed(0)
+
+y2_model_m2 <- cv.glmnet(log(VALUE) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(LMED * AGE1, 3, raw = TRUE))^2, data = m2, use.model.frame = TRUE, nfold =3)
+
+set.seed(0)
+d2_model_m2 <- cv.glmnet(log(LMED) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(LMED * AGE1, 3, raw = TRUE))^2, data = m2, use.model.frame = TRUE, nfold =3)
+
+#m3
+set.seed(0)
+
+y2_model_m3 <- cv.glmnet(log(VALUE) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(LMED * AGE1, 3, raw = TRUE))^2, data = m3, use.model.frame = TRUE, nfold =3)
+
+set.seed(0)
+d2_model_m3 <- cv.glmnet(log(LMED) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(LMED * AGE1, 3, raw = TRUE))^2, data = m3, use.model.frame = TRUE, nfold =3)
+
+#m7
+set.seed(0)
+
+y2_model_m7 <- cv.glmnet(log(VALUE) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(LMED * AGE1, 3, raw = TRUE))^2, data = m7, use.model.frame = TRUE, nfold =3)
+
+set.seed(0)
+d2_model_m7 <- cv.glmnet(log(LMED) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(LMED * AGE1, 3, raw = TRUE))^2, data = m7, use.model.frame = TRUE, nfold =3)
+```
+
+```{r}
+#m1
+y2_nonzero_coef_ind_m1 <- which(coef(y2_model_m1, s = "lambda.min")[-1]!=0 )
+d2_nonzero_coef_ind_m1 <- which(coef(d2_model_m1, s = "lambda.min")[-1]!=0 )
+
+nonzero2_coef_ind_m1 <- union(y2_nonzero_coef_ind_m1,d2_nonzero_coef_ind_m1)
+
+
+#m2
+y2_nonzero_coef_ind_m2 <- which(coef(y2_model_m2, s = "lambda.min")[-1]!=0 )
+d2_nonzero_coef_ind_m2 <- which(coef(d2_model_m2, s = "lambda.min")[-1]!=0 )
+
+nonzero2_coef_ind_m2 <- union(y2_nonzero_coef_ind_m2,d2_nonzero_coef_ind_m2)
+
+
+#m3
+y2_nonzero_coef_ind_m3 <- which(coef(y2_model_m3, s = "lambda.min")[-1]!=0 )
+d2_nonzero_coef_ind_m3 <- which(coef(d2_model_m3, s = "lambda.min")[-1]!=0 )
+
+nonzero2_coef_ind_m3 <- union(y2_nonzero_coef_ind_m3,d2_nonzero_coef_ind_m3)
+
+
+#m7
+y2_nonzero_coef_ind_m7 <- which(coef(y2_model_m7, s = "lambda.min")[-1]!=0 )
+d2_nonzero_coef_ind_m7 <- which(coef(d2_model_m7, s = "lambda.min")[-1]!=0 )
+
+nonzero2_coef_ind_m7 <- union(y2_nonzero_coef_ind_m7,d2_nonzero_coef_ind_m7)
+
+```
+
+
+
+```{r}
+#m1
+controls2_m1 <- model.matrix(~(poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) + poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(LMED * AGE1, 3, raw = TRUE))^2 , data = m1 )[, -1]
+
+
+#m2
+controls2_m2 <- model.matrix(~(poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) + poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(LMED * AGE1, 3, raw = TRUE))^2 , data = m2 )[, -1]
+
+
+#m3
+controls2_m3 <- model.matrix(~(poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) + poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(LMED * AGE1, 3, raw = TRUE))^2 , data = m3 )[, -1]
+
+
+#m7
+controls2_m7 <- model.matrix(~(poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) + poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(LMED * AGE1, 3, raw = TRUE))^2 , data = m7 )[, -1]
+
+```
+
+
+```{r}
+#m1
+new2_m1 <- data.frame(VALUE =m1$VALUE ,
+                   LMED =m1$LMED ,
+                   controls2_m1[,nonzero2_coef_ind_m1 ])
+
+
+#m2
+new2_m2 <- data.frame(VALUE =m2$VALUE ,
+                   LMED =m2$LMED ,
+                   controls2_m2[,nonzero2_coef_ind_m2 ])
+
+
+#m3
+new2_m3 <- data.frame(VALUE =m3$VALUE ,
+                   LMED =m3$LMED ,
+                   controls2_m3[,nonzero2_coef_ind_m3 ])
+
+
+#m7
+new2_m7 <- data.frame(VALUE =m7$VALUE ,
+                   LMED =m7$LMED ,
+                   controls2_m7[,nonzero2_coef_ind_m7 ])
+
+```
+
+
+```{r}
+#m1
+cat(length(nonzero2_coef_ind_m1), "controls were included out of", ncol(controls2_m1), "\n")
+
+
+#m2
+cat(length(nonzero2_coef_ind_m2), "controls were included out of", ncol(controls2_m2), "\n")
+
+
+#m3
+cat(length(nonzero2_coef_ind_m3), "controls were included out of", ncol(controls2_m3), "\n")
+
+
+#m7
+cat(length(nonzero2_coef_ind_m7), "controls were included out of", ncol(controls2_m7), "\n")
+
+```
+
+```{r}
+#m1
+post_lasso2_m1 <- glm(log(VALUE) ~ ., data =new2_m1)
+coef(summary(post_lasso2_m1))["LMED", ]
+
+
+#m2
+post_lasso2_m2 <- glm(log(VALUE) ~ ., data =new2_m2)
+coef(summary(post_lasso2_m2))["LMED", ]
+
+
+#m3
+post_lasso2_m3 <- glm(log(VALUE) ~ ., data =new2_m3)
+coef(summary(post_lasso2_m3))["LMED", ]
+
+
+#m7
+post_lasso2_m7 <- glm(log(VALUE) ~ ., data =new2_m7)
+coef(summary(post_lasso2_m7))["LMED", ]
+
+```
+
+```{r}
+#m1
+cfact_data2_m1 <- new2_m1
+cfact_data2_m1$LMED <- mean(m1$LMED) * 1.1    
+
+
+#m2
+cfact_data2_m2 <- new2_m2
+cfact_data2_m2$LMED <- mean(m2$LMED) * 1.1 
+
+
+#m3
+cfact_data2_m3 <- new2_m3
+cfact_data2_m3$LMED <- mean(m3$LMED) * 1.1
+
+
+#m7
+cfact_data2_m7 <- new2_m7
+cfact_data2_m7$LMED <- mean(m7$LMED) * 1.1
+
+```
+
+
+```{r}
+### Predicted
+mean(predict(post_lasso2_m1,cfact_data2_m1 ))
+
+mean(predict(post_lasso2_m2,cfact_data2_m2 ))
+
+mean(predict(post_lasso2_m3,cfact_data2_m3 ))
+
+mean(predict(post_lasso2_m7,cfact_data2_m7 ))
+
+```
+
+```{r}
+## Actual
+mean(log(m1$VALUE))
+
+mean(log(m2$VALUE))
+
+mean(log(m3$VALUE))
+
+mean(log(m7$VALUE))
+```
+```{r}
+#Differences between actual and predicted home values in %
+m1_d2 = mean(log(m1$VALUE)) - mean(predict(post_lasso2_m1,cfact_data2_m1 )) 
+m1_d2 * 100
+m2_d2 = mean(log(m2$VALUE)) - mean(predict(post_lasso2_m2,cfact_data2_m2 ))
+m2_d2 * 100
+m3_d2 = mean(log(m3$VALUE)) - mean(predict(post_lasso2_m3,cfact_data2_m3 ))
+m3_d2 * 100
+m7_d2 = mean(log(m7$VALUE)) - mean(predict(post_lasso2_m7,cfact_data2_m7 ))
+m7_d2 * 100
+
+```
+
+```{r}
+par(mfrow = c(2,2))
+
+#Y models
+plot(y2_model_m1)
+title("CV Curve m1 y_model", line = 3)
+plot(y2_model_m2)
+title("CV Curve m2 y_model", line = 3)
+plot(y2_model_m3)
+title("CV Curve m3 y_model", line = 3)
+plot(y2_model_m7)
+title("CV Curve m7 y_model", line = 3)
+
+#D models
+plot(d2_model_m1)
+title("CV Curve m1 d_model", line = 3)
+plot(d2_model_m2)
+title("CV Curve m2 d_model", line = 3)
+plot(d2_model_m3)
+title("CV Curve m3 d_model", line = 3)
+plot(d2_model_m7)
+title("CV Curve m7 d_model", line = 3)
+
+```
+
+```{r}
+par(mfrow = c(2,2))
+
+#Y models
+plot(y2_model_m1$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m1 y_model", line = 3)
+plot(y2_model_m2$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m2 y_model", line = 3)
+plot(y2_model_m3$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m3 y_model", line = 3)
+plot(y2_model_m7$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m7 y_model", line = 3)
+
+#D models
+plot(d2_model_m1$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m1 d_model", line = 3)
+plot(d2_model_m2$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m2 d_model", line = 3)
+plot(d2_model_m3$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m3 d_model", line = 3)
+plot(d2_model_m7$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m7 d_model", line = 3)
+
+#these graphs tell us how well the y and d models variables adjust to different levels of penalization and determine the most useful variables in determining the value of a home in different models by showing the non-zero coefficient values of variables with an impact on home value 
+
+```
+
+## POST LASSO REGRESSION - INTERACTION TERM(BEDRMS*ROOMS)
+
+```{r}
+#m1
+set.seed(0)
+
+y3_model_m1 <- cv.glmnet(log(VALUE) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(BEDRMS * ROOMS, 3, raw = TRUE))^2, data = m1, use.model.frame = TRUE, nfold =3)
+
+set.seed(0)
+d3_model_m1 <- cv.glmnet(log(LMED) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(BEDRMS * ROOMS, 3, raw = TRUE))^2, data = m1, use.model.frame = TRUE, nfold =3)
+
+
+#m2
+set.seed(0)
+
+y3_model_m2 <- cv.glmnet(log(VALUE) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(BEDRMS * ROOMS, 3, raw = TRUE))^2, data = m2, use.model.frame = TRUE, nfold =3)
+
+set.seed(0)
+d3_model_m2 <- cv.glmnet(log(LMED) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(BEDRMS * ROOMS, 3, raw = TRUE))^2, data = m2, use.model.frame = TRUE, nfold =3)
+
+#m3
+set.seed(0)
+
+y3_model_m3 <- cv.glmnet(log(VALUE) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(BEDRMS * ROOMS, 3, raw = TRUE))^2, data = m3, use.model.frame = TRUE, nfold =3)
+
+set.seed(0)
+d3_model_m3 <- cv.glmnet(log(LMED) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(BEDRMS * ROOMS, 3, raw = TRUE))^2, data = m3, use.model.frame = TRUE, nfold =3)
+
+#m7
+set.seed(0)
+
+y3_model_m7 <- cv.glmnet(log(VALUE) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(BEDRMS * ROOMS, 3, raw = TRUE))^2, data = m7, use.model.frame = TRUE, nfold =3)
+
+set.seed(0)
+d3_model_m7 <- cv.glmnet(log(LMED) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(BEDRMS * ROOMS, 3, raw = TRUE))^2, data = m7, use.model.frame = TRUE, nfold =3)
+```
+
+```{r}
+#m1
+y3_nonzero_coef_ind_m1 <- which(coef(y3_model_m1, s = "lambda.min")[-1]!=0 )
+d3_nonzero_coef_ind_m1 <- which(coef(d3_model_m1, s = "lambda.min")[-1]!=0 )
+
+nonzero3_coef_ind_m1 <- union(y3_nonzero_coef_ind_m1,d3_nonzero_coef_ind_m1)
+
+
+#m2
+y3_nonzero_coef_ind_m2 <- which(coef(y3_model_m2, s = "lambda.min")[-1]!=0 )
+d3_nonzero_coef_ind_m2 <- which(coef(d3_model_m2, s = "lambda.min")[-1]!=0 )
+
+nonzero3_coef_ind_m2 <- union(y3_nonzero_coef_ind_m2,d3_nonzero_coef_ind_m2)
+
+
+#m3
+y3_nonzero_coef_ind_m3 <- which(coef(y3_model_m3, s = "lambda.min")[-1]!=0 )
+d3_nonzero_coef_ind_m3 <- which(coef(d3_model_m3, s = "lambda.min")[-1]!=0 )
+
+nonzero3_coef_ind_m3 <- union(y3_nonzero_coef_ind_m3,d3_nonzero_coef_ind_m3)
+
+
+#m7
+y3_nonzero_coef_ind_m7 <- which(coef(y3_model_m7, s = "lambda.min")[-1]!=0 )
+d3_nonzero_coef_ind_m7 <- which(coef(d3_model_m7, s = "lambda.min")[-1]!=0 )
+
+nonzero3_coef_ind_m7 <- union(y3_nonzero_coef_ind_m7,d3_nonzero_coef_ind_m7)
+
+```
+
+
+
+```{r}
+#m1
+controls3_m1 <- model.matrix(~(poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) + poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(BEDRMS * ROOMS, 3, raw = TRUE))^2 , data = m1 )[, -1]
+
+
+#m2
+controls3_m2 <- model.matrix(~(poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) + poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(BEDRMS * ROOMS, 3, raw = TRUE))^2 , data = m2 )[, -1]
+
+
+#m3
+controls3_m3 <- model.matrix(~(poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) + poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(BEDRMS * ROOMS, 3, raw = TRUE))^2 , data = m3 )[, -1]
+
+
+#m7
+controls3_m7 <- model.matrix(~(poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) + poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(BEDRMS * ROOMS, 3, raw = TRUE))^2 , data = m7 )[, -1]
+
+```
+
+
+```{r}
+#m1
+new3_m1 <- data.frame(VALUE =m1$VALUE ,
+                   LMED =m1$LMED ,
+                   controls3_m1[,nonzero3_coef_ind_m1 ])
+
+
+#m2
+new3_m2 <- data.frame(VALUE =m2$VALUE ,
+                   LMED =m2$LMED ,
+                   controls3_m2[,nonzero3_coef_ind_m2 ])
+
+
+#m3
+new3_m3 <- data.frame(VALUE =m3$VALUE ,
+                   LMED =m3$LMED ,
+                   controls3_m3[,nonzero3_coef_ind_m3 ])
+
+
+#m7
+new3_m7 <- data.frame(VALUE =m7$VALUE ,
+                   LMED =m7$LMED ,
+                   controls3_m7[,nonzero3_coef_ind_m7 ])
+
+```
+
+
+```{r}
+#m1
+cat(length(nonzero3_coef_ind_m1), "controls were included out of", ncol(controls3_m1), "\n")
+
+
+#m2
+cat(length(nonzero3_coef_ind_m2), "controls were included out of", ncol(controls3_m2), "\n")
+
+
+#m3
+cat(length(nonzero3_coef_ind_m3), "controls were included out of", ncol(controls3_m3), "\n")
+
+
+#m7
+cat(length(nonzero3_coef_ind_m7), "controls were included out of", ncol(controls3_m7), "\n")
+
+```
+
+```{r}
+#m1
+post_lasso3_m1 <- glm(log(VALUE) ~ ., data =new3_m1)
+coef(summary(post_lasso3_m1))["LMED", ]
+
+
+#m2
+post_lasso3_m2 <- glm(log(VALUE) ~ ., data =new3_m2)
+coef(summary(post_lasso3_m2))["LMED", ]
+
+
+#m3
+post_lasso3_m3 <- glm(log(VALUE) ~ ., data =new3_m3)
+coef(summary(post_lasso3_m3))["LMED", ]
+
+
+#m7
+post_lasso3_m7 <- glm(log(VALUE) ~ ., data =new3_m7)
+coef(summary(post_lasso3_m7))["LMED", ]
+
+```
+
+```{r}
+#m1
+cfact_data3_m1 <- new3_m1
+cfact_data3_m1$LMED <- mean(m1$LMED) * 1.1    
+
+
+#m2
+cfact_data3_m2 <- new3_m2
+cfact_data3_m2$LMED <- mean(m2$LMED) * 1.1 
+
+
+#m3
+cfact_data3_m3 <- new3_m3
+cfact_data3_m3$LMED <- mean(m3$LMED) * 1.1
+
+
+#m7
+cfact_data3_m7 <- new3_m7
+cfact_data3_m7$LMED <- mean(m7$LMED) * 1.1
+
+```
+
+
+```{r}
+### Predicted
+mean(predict(post_lasso3_m1,cfact_data3_m1 ))
+
+mean(predict(post_lasso3_m2,cfact_data3_m2 ))
+
+mean(predict(post_lasso3_m3,cfact_data3_m3 ))
+
+mean(predict(post_lasso3_m7,cfact_data3_m7 ))
+
+```
+
+```{r}
+## Actual
+mean(log(m1$VALUE))
+
+mean(log(m2$VALUE))
+
+mean(log(m3$VALUE))
+
+mean(log(m7$VALUE))
+```
+```{r}
+#Differences between actual and predicted home values in %
+m1_d3 = mean(log(m1$VALUE)) - mean(predict(post_lasso3_m1,cfact_data3_m1 )) 
+m1_d3 * 100
+m2_d3 = mean(log(m2$VALUE)) - mean(predict(post_lasso3_m2,cfact_data3_m2 ))
+m2_d3 * 100
+m3_d3 = mean(log(m3$VALUE)) - mean(predict(post_lasso3_m3,cfact_data3_m3 ))
+m3_d3 * 100
+m7_d3 = mean(log(m7$VALUE)) - mean(predict(post_lasso3_m7,cfact_data3_m7 ))
+m7_d3 * 100
+
+```
+
+```{r}
+par(mfrow = c(2,2))
+
+#Y models
+plot(y3_model_m1)
+title("CV Curve m1 y_model", line = 3)
+plot(y3_model_m2)
+title("CV Curve m2 y_model", line = 3)
+plot(y3_model_m3)
+title("CV Curve m3 y_model", line = 3)
+plot(y3_model_m7)
+title("CV Curve m7 y_model", line = 3)
+
+#D models
+plot(d3_model_m1)
+title("CV Curve m1 d_model", line = 3)
+plot(d3_model_m2)
+title("CV Curve m2 d_model", line = 3)
+plot(d3_model_m3)
+title("CV Curve m3 d_model", line = 3)
+plot(d3_model_m7)
+title("CV Curve m7 d_model", line = 3)
+
+```
+
+```{r}
+par(mfrow = c(2,2))
+
+#Y models
+plot(y3_model_m1$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m1 y_model", line = 3)
+plot(y3_model_m2$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m2 y_model", line = 3)
+plot(y3_model_m3$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m3 y_model", line = 3)
+plot(y3_model_m7$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m7 y_model", line = 3)
+
+#D models
+plot(d3_model_m1$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m1 d_model", line = 3)
+plot(d3_model_m2$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m2 d_model", line = 3)
+plot(d3_model_m3$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m3 d_model", line = 3)
+plot(d3_model_m7$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m7 d_model", line = 3)
+
+#these graphs tell us how well the y and d models variables adjust to different levels of penalization and determine the most useful variables in determining the value of a home in different models by showing the non-zero coefficient values of variables with an impact on home value 
+
+```
+
+## POST LASSO REGRESSION - INTERACTION TERM(UTILITY*ROOMS)
+
+```{r}
+#m1
+set.seed(0)
+
+y4_model_m1 <- cv.glmnet(log(VALUE) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(LMED * ROOMS, 3, raw = TRUE))^2, data = m1, use.model.frame = TRUE, nfold =3)
+
+set.seed(0)
+d4_model_m1 <- cv.glmnet(log(LMED) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(LMED * ROOMS, 3, raw = TRUE))^2, data = m1, use.model.frame = TRUE, nfold =3)
+
+
+#m2
+set.seed(0)
+
+y4_model_m2 <- cv.glmnet(log(VALUE) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(UTILITY * ROOMS, 3, raw = TRUE))^2, data = m2, use.model.frame = TRUE, nfold =3)
+
+set.seed(0)
+d4_model_m2 <- cv.glmnet(log(LMED) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(UTILITY * ROOMS, 3, raw = TRUE))^2, data = m2, use.model.frame = TRUE, nfold =3)
+
+#m3
+set.seed(0)
+
+y4_model_m3 <- cv.glmnet(log(VALUE) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(UTILITY * ROOMS, 3, raw = TRUE))^2, data = m3, use.model.frame = TRUE, nfold =3)
+
+set.seed(0)
+d4_model_m3 <- cv.glmnet(log(LMED) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(UTILITY * ROOMS, 3, raw = TRUE))^2, data = m3, use.model.frame = TRUE, nfold =3)
+
+#m7
+set.seed(0)
+
+y4_model_m7 <- cv.glmnet(log(VALUE) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(UTILITY * ROOMS, 3, raw = TRUE))^2, data = m7, use.model.frame = TRUE, nfold =3)
+
+set.seed(0)
+d4_model_m7 <- cv.glmnet(log(LMED) ~ (poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) +poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(UTILITY * ROOMS, 3, raw = TRUE))^2, data = m7, use.model.frame = TRUE, nfold =3)
+```
+
+```{r}
+#m1
+y4_nonzero_coef_ind_m1 <- which(coef(y4_model_m1, s = "lambda.min")[-1]!=0 )
+d4_nonzero_coef_ind_m1 <- which(coef(d4_model_m1, s = "lambda.min")[-1]!=0 )
+
+nonzero4_coef_ind_m1 <- union(y4_nonzero_coef_ind_m1,d4_nonzero_coef_ind_m1)
+
+
+#m2
+y4_nonzero_coef_ind_m2 <- which(coef(y4_model_m2, s = "lambda.min")[-1]!=0 )
+d4_nonzero_coef_ind_m2 <- which(coef(d4_model_m2, s = "lambda.min")[-1]!=0 )
+
+nonzero4_coef_ind_m2 <- union(y4_nonzero_coef_ind_m2,d4_nonzero_coef_ind_m2)
+
+
+#m3
+y4_nonzero_coef_ind_m3 <- which(coef(y4_model_m3, s = "lambda.min")[-1]!=0 )
+d4_nonzero_coef_ind_m3 <- which(coef(d4_model_m3, s = "lambda.min")[-1]!=0 )
+
+nonzero4_coef_ind_m3 <- union(y4_nonzero_coef_ind_m3,d4_nonzero_coef_ind_m3)
+
+
+#m7
+y4_nonzero_coef_ind_m7 <- which(coef(y4_model_m7, s = "lambda.min")[-1]!=0 )
+d4_nonzero_coef_ind_m7 <- which(coef(d4_model_m7, s = "lambda.min")[-1]!=0 )
+
+nonzero4_coef_ind_m7 <- union(y4_nonzero_coef_ind_m7,d4_nonzero_coef_ind_m7)
+
+```
+
+
+
+```{r}
+#m1
+controls4_m1 <- model.matrix(~(poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) + poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(UTILITY * ROOMS, 3, raw = TRUE))^2 , data = m1 )[, -1]
+
+
+#m2
+controls4_m2 <- model.matrix(~(poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) + poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(UTILITY * ROOMS, 3, raw = TRUE))^2 , data = m2 )[, -1]
+
+
+#m3
+controls4_m3 <- model.matrix(~(poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) + poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(UTILITY * ROOMS, 3, raw = TRUE))^2 , data = m3 )[, -1]
+
+
+#m7
+controls4_m7 <- model.matrix(~(poly(BEDRMS, 3, raw=TRUE) +  poly(BUILT, 3, raw=TRUE) + poly(NUNITS, 3, raw=TRUE) + poly(ROOMS, 3, raw=TRUE) + poly(AGE1, 3, raw=TRUE) + poly(UTILITY, 3, raw=TRUE) + poly(UTILITY * ROOMS, 3, raw = TRUE))^2 , data = m7 )[, -1]
+
+```
+
+
+```{r}
+#m1
+new4_m1 <- data.frame(VALUE =m1$VALUE ,
+                   LMED =m1$LMED ,
+                   controls4_m1[,nonzero4_coef_ind_m1 ])
+
+
+#m2
+new4_m2 <- data.frame(VALUE =m2$VALUE ,
+                   LMED =m2$LMED ,
+                   controls4_m2[,nonzero4_coef_ind_m2 ])
+
+
+#m3
+new4_m3 <- data.frame(VALUE =m3$VALUE ,
+                   LMED =m3$LMED ,
+                   controls4_m3[,nonzero4_coef_ind_m3 ])
+
+
+#m7
+new4_m7 <- data.frame(VALUE =m7$VALUE ,
+                   LMED =m7$LMED ,
+                   controls4_m7[,nonzero4_coef_ind_m7 ])
+
+```
+
+
+```{r}
+#m1
+cat(length(nonzero4_coef_ind_m1), "controls were included out of", ncol(controls4_m1), "\n")
+
+
+#m2
+cat(length(nonzero4_coef_ind_m2), "controls were included out of", ncol(controls4_m2), "\n")
+
+
+#m3
+cat(length(nonzero4_coef_ind_m3), "controls were included out of", ncol(controls4_m3), "\n")
+
+
+#m7
+cat(length(nonzero4_coef_ind_m7), "controls were included out of", ncol(controls4_m7), "\n")
+
+```
+
+```{r}
+#m1
+post_lasso4_m1 <- glm(log(VALUE) ~ ., data =new4_m1)
+coef(summary(post_lasso4_m1))["LMED", ]
+
+
+#m2
+post_lasso4_m2 <- glm(log(VALUE) ~ ., data =new4_m2)
+coef(summary(post_lasso4_m2))["LMED", ]
+
+
+#m3
+post_lasso4_m3 <- glm(log(VALUE) ~ ., data =new4_m3)
+coef(summary(post_lasso4_m3))["LMED", ]
+
+
+#m7
+post_lasso4_m7 <- glm(log(VALUE) ~ ., data =new4_m7)
+coef(summary(post_lasso4_m7))["LMED", ]
+
+```
+
+```{r}
+#m1
+cfact_data4_m1 <- new4_m1
+cfact_data4_m1$LMED <- mean(m1$LMED) * 1.1    
+
+
+#m2
+cfact_data4_m2 <- new4_m2
+cfact_data4_m2$LMED <- mean(m2$LMED) * 1.1 
+
+
+#m3
+cfact_data4_m3 <- new4_m3
+cfact_data4_m3$LMED <- mean(m3$LMED) * 1.1
+
+
+#m7
+cfact_data4_m7 <- new4_m7
+cfact_data4_m7$LMED <- mean(m7$LMED) * 1.1
+
+```
+
+
+```{r}
+### Predicted
+mean(predict(post_lasso4_m1,cfact_data4_m1 ))
+
+mean(predict(post_lasso4_m2,cfact_data4_m2 ))
+
+mean(predict(post_lasso4_m3,cfact_data4_m3 ))
+
+mean(predict(post_lasso4_m7,cfact_data4_m7 ))
+
+```
+
+```{r}
+## Actual
+mean(log(m1$VALUE))
+
+mean(log(m2$VALUE))
+
+mean(log(m3$VALUE))
+
+mean(log(m7$VALUE))
+```
+```{r}
+#Differences between actual and predicted home values in %
+m1_d4 = mean(log(m1$VALUE)) - mean(predict(post_lasso4_m1,cfact_data4_m1 )) 
+m1_d4 * 100
+m2_d4 = mean(log(m2$VALUE)) - mean(predict(post_lasso4_m2,cfact_data4_m2 ))
+m2_d4 * 100
+m3_d4 = mean(log(m3$VALUE)) - mean(predict(post_lasso4_m3,cfact_data4_m3 ))
+m3_d4 * 100
+m7_d4 = mean(log(m7$VALUE)) - mean(predict(post_lasso4_m7,cfact_data4_m7 ))
+m7_d4 * 100
+
+```
+
+```{r}
+par(mfrow = c(2,2))
+
+#Y models
+plot(y4_model_m1)
+title("CV Curve m1 y_model", line = 3)
+plot(y4_model_m2)
+title("CV Curve m2 y_model", line = 3)
+plot(y4_model_m3)
+title("CV Curve m3 y_model", line = 3)
+plot(y4_model_m7)
+title("CV Curve m7 y_model", line = 3)
+
+#D models
+plot(d4_model_m1)
+title("CV Curve m1 d_model", line = 3)
+plot(d4_model_m2)
+title("CV Curve m2 d_model", line = 3)
+plot(d4_model_m3)
+title("CV Curve m3 d_model", line = 3)
+plot(d4_model_m7)
+title("CV Curve m7 d_model", line = 3)
+
+```
+
+```{r}
+par(mfrow = c(2,2))
+
+#Y models
+plot(y4_model_m1$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m1 y_model", line = 3)
+plot(y4_model_m2$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m2 y_model", line = 3)
+plot(y4_model_m3$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m3 y_model", line = 3)
+plot(y4_model_m7$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m7 y_model", line = 3)
+
+#D models
+plot(d4_model_m1$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m1 y_model", line = 3)
+plot(d4_model_m2$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m2 d_model", line = 3)
+plot(d4_model_m3$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m3 d_model", line = 3)
+plot(d4_model_m7$glmnet, xvar = "lambda", label = TRUE)
+title("Lasso Regularization Path m7 d_model", line = 3)
+
+#these graphs tell us how well the y and d models variables adjust to different levels of penalization and determine the most useful variables in determining the value of a home in different models by showing the non-zero coefficient values of variables with an impact on home value 
+
+```
+
