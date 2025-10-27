@@ -1,6 +1,6 @@
 ---
 title: "Final Paper Code"
-author: "Parul Datta, Amrit Dhillon"
+author: "Amrit Dhillon"
 date: "2025-06-10"
 output:
   html_document:
